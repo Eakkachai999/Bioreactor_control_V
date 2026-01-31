@@ -1,0 +1,143 @@
+//setting the setpoint at here!-------------------------------------
+float setpointtemp = 30;  
+int MinpH = 6;
+int MaxpH = 8;
+int Maxoxygen = 1; //%vol
+//------------------------------------------------------------------
+#define relay1 7  //circulate pump---blue
+#define relay2 6  //Mixing----purple
+#define relay3 5  //Gas N2 valve----grey
+#define relay4 4  //Acid pump----white
+#define relay5 3  //Base pump----black
+#define relay6 2  //Heater----brown
+
+//---------------------Oxygen sensor--------------------------------
+#include "DFRobot_OxygenSensor.h"
+#define COLLECT_NUMBER 10  // collect number, the collection range is 1-100.
+#define Oxygen_IICAddress ADDRESS_3
+DFRobot_OxygenSensor Oxygen;
+
+//------------------------------------------------------------------
+#include "max6675.h"
+//-----------------------Temp Heater--------------------------------
+int thermoDO = 8;
+int thermoCS = 9;
+int thermoCLK = 10;
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+//-----------------------Temp Reactor--------------------------------
+int thermoDO1 = 31; //blue
+int thermoCS1 = 30; //purple
+int thermoCLK1 = 32; //grey
+MAX6675 thermocouple1(thermoCLK1, thermoCS1, thermoDO1);
+//------------------------------------------------------------------
+const int analogPhPin = A1; 
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(relay1, OUTPUT);
+  pinMode(relay2, OUTPUT);
+  pinMode(relay3, OUTPUT);
+  pinMode(relay4, OUTPUT);
+  pinMode(relay5, OUTPUT);
+  pinMode(relay6, OUTPUT);
+  digitalWrite(relay1, HIGH);
+  digitalWrite(relay2, HIGH);
+  digitalWrite(relay3, LOW);
+  digitalWrite(relay4, LOW);
+  digitalWrite(relay5, LOW);
+  digitalWrite(relay6, LOW);
+}
+
+void loop() {
+  //--------------------Temp Read-----------------------------
+  float TempHot = thermocouple.readCelsius(); //่พันเทปสีแดง
+  Serial.print("Temp Heater Tank = ");
+  Serial.println(TempHot);
+
+  float TempReactor = thermocouple1.readCelsius(); //่พันเทปสีดำ
+  Serial.print("Temp Reactor = ");
+  Serial.println(TempReactor);
+  //--------------------pH read----------------------------------
+  float Current = analogRead(A1);
+  float avgPH = (Current/5)*1023;
+  float sum1 = avgPH;
+  delay(50);
+  float sum2 = avgPH;
+  delay(50);
+  float sum3 = avgPH;
+  delay(50);
+  float sum4 = avgPH;
+  delay(50);
+  float sum5 = avgPH;
+  delay(50);
+  float sum6 = avgPH;
+  delay(50);
+  float sum7 = avgPH;
+  delay(50);
+  float sum8 = avgPH;
+  delay(50);
+  float sum9 = avgPH;
+  delay(50);
+  float sum10 = avgPH;
+  delay(50);
+  float AvgPH2 = ((sum1+sum2+sum3+sum4+sum5+sum6+sum7+sum8+sum9+sum10)/10);
+ // Serial.println(AvgPH2);
+  float pH =((AvgPH2-88000)/(-2000));
+  Serial.print("pH = ");
+  Serial.println(pH);
+  //--------------------Temp Control-----------------------------
+  float case1 = setpointtemp + 5;
+  float case2 = setpointtemp+1;
+
+  if (TempReactor < setpointtemp) {
+    if (TempHot < case1) {
+      digitalWrite(relay6, HIGH);
+    }
+    if (TempHot >= case1) {
+      digitalWrite(relay6, LOW);
+    }
+  }
+  if (TempReactor >= setpointtemp) {
+    if (TempHot < case2) {
+      digitalWrite(relay6, HIGH);
+    }
+    if (TempHot >= case2) {
+      digitalWrite(relay6, LOW);
+    }
+  }
+//--------------------------------pH control----------------------
+  if (pH >= MaxpH) {
+    digitalWrite(relay4, HIGH);
+//    Serial.println("ON Acidpump");
+    digitalWrite(relay5, LOW);
+//    Serial.println("OFF Basepump");
+  }
+  if (pH <= MinpH) {
+    digitalWrite(relay4, LOW);
+//    Serial.println("OFF Acidpump");
+    digitalWrite(relay5, HIGH);
+//    Serial.println("ON Basepump");
+  }
+  if (pH > MinpH & pH < MaxpH) {
+    digitalWrite(relay4, LOW);
+//    Serial.println("OFF Acidpump");
+    digitalWrite(relay5, LOW);
+//    Serial.println("OFF Basepump");
+   }
+//   //---------------------Oxygen Read--------------------------------------
+  float oxygenData = Oxygen.getOxygenData(COLLECT_NUMBER);
+  Serial.print("Oxygen concentration is");
+//  Serial.print(oxygenData);
+  Serial.println("%vol");
+
+  //---------------------Oxygen Control-----------------------------------
+  if (oxygenData >= Maxoxygen) {
+    digitalWrite(relay3, HIGH);
+//    Serial.println("N2 Valve is ON");
+  }
+  if (oxygenData < Maxoxygen) {
+    digitalWrite(relay3, LOW);
+//    Serial.println("N2 Valve is OFF");
+  }
+}
