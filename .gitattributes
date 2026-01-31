@@ -4,12 +4,12 @@ int MinpH = 6;
 int MaxpH = 8;
 int Maxoxygen = 1; //%vol
 //------------------------------------------------------------------
-#define relay1 7  //circulate pump---blue
-#define relay2 6  //Mixing----purple
-#define relay3 5  //Gas N2 valve----grey
-#define relay4 4  //Acid pump----white
-#define relay5 3  //Base pump----black
-#define relay6 2  //Heater----brown
+#define relay1 7  //circulate 
+#define relay2 6  //Mixing
+#define relay3 5  //Gas N2 valve
+#define relay4 4  //Acid pump
+#define relay5 3  //Base pump
+#define relay6 2  //Heater
 
 //---------------------Oxygen sensor--------------------------------
 #include "DFRobot_OxygenSensor.h"
@@ -51,11 +51,11 @@ void setup() {
 
 void loop() {
   //--------------------Temp Read-----------------------------
-  float TempHot = thermocouple.readCelsius(); //่พันเทปสีแดง
+  float TempHot = thermocouple.readCelsius(); 
   Serial.print("Temp Heater Tank = ");
   Serial.println(TempHot);
 
-  float TempReactor = thermocouple1.readCelsius(); //่พันเทปสีดำ
+  float TempReactor = thermocouple1.readCelsius(); 
   Serial.print("Temp Reactor = ");
   Serial.println(TempReactor);
   //--------------------pH read----------------------------------
